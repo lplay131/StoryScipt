@@ -1,2 +1,2 @@
 # StoryScipt
-Story Script is a mod that allows you to create storylines right in the game.
+Story Script – это мод для игры Minecraft, позваляющий создавать сюжетные линии прямо в игре.

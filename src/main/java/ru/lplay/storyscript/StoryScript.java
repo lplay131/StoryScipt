@@ -1,46 +1,26 @@
 package ru.lplay.storyscript;
 
-import com.mojang.logging.LogUtils;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.slf4j.Logger;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import ru.lplay.storyscript.commands.CommandSS;
 
 @Mod(StoryScript.MODID)
 public class StoryScript {
 
     public static final String MODID = "storyscript";
-    // Logger
-    private static final Logger LOGGER = LogUtils.getLogger();
 
     public StoryScript() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::commonSetup);
-        MinecraftForge.EVENT_BUS.register(this);
+        // Инициализация мода
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        LOGGER.info("COMMON SETUP TEST");
-    }
-
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        LOGGER.info("SERVER STARTING TEST");
-    }
-
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents {
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+    public static class RegistrationHandler {
 
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
-            LOGGER.info("CLIENT SETUP TEST");
+        public static void onRegisterCommands(RegisterCommandsEvent event) {
+            CommandSS.register(event.getDispatcher());
         }
     }
 }

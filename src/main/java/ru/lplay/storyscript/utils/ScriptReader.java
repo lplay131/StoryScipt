@@ -11,18 +11,23 @@ import java.nio.charset.StandardCharsets;
 
 public class ScriptReader {
 
+    private static String  msgColor = "#ffffff";
+
     public static void readScript(String filePath, CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
+        msgColor = "#ffffff";
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8));
             String line;
+            int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
-                if(line.startsWith("msg"))
+                lineNumber++;
+                if (line.startsWith("msg"))
                     msg(line, context);
-                else if(line.startsWith("setColor"))
+                else if (line.startsWith("setColor"))
                     setColor(line, context);
                 else
-                    source.sendFailure(Component.literal("Неизвестная команда!").setStyle(Style.EMPTY.withColor(TextColor.parseColor("#d12a2a"))));
+                    source.sendFailure(Component.literal("Неизвестная команда на "+lineNumber+" строчке.").setStyle(Style.EMPTY.withColor(TextColor.parseColor("#d12a2a"))));
             }
             reader.close();
         } catch (IOException e) {
@@ -36,14 +41,16 @@ public class ScriptReader {
         if (parts.length >= 3) {
             String personage = parts[1];
             String message = parts[2].substring(1).trim();
-            Style style = Style.EMPTY.withColor(TextColor.parseColor("#ff0000"));
-            source.sendSuccess(Component.literal("["+personage+"] "+message).setStyle(style), true);
+            Style style = Style.EMPTY.withColor(TextColor.parseColor(msgColor));
+            source.sendSuccess((Component.literal("["+personage+"] ").setStyle(style)).append(Component.literal(message).setStyle(Style.EMPTY.withColor(TextColor.parseColor("#ffffff")))), true);
         }
     }
 
     private static void setColor(String command, CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        source.sendSuccess(Component.literal("Установка цвета...").setStyle(Style.EMPTY.withColor(TextColor.parseColor("#7e8bfc"))), true);
-        // Тут будет код для установкие цвета... Потом
+        String[] parts = command.split("\"");
+        if (parts.length >= 2) {
+            msgColor = parts[1];
+        }
     }
 }

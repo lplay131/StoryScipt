@@ -22,12 +22,14 @@ public class ScriptReader {
             int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if (line.startsWith("msg"))
-                    msg(line, context);
-                else if (line.startsWith("setColor"))
-                    setColor(line, context);
-                else
-                    source.sendFailure(Component.literal("Неизвестная команда на "+lineNumber+" строчке.").setStyle(Style.EMPTY.withColor(TextColor.parseColor("#d12a2a"))));
+                if (!line.trim().isEmpty()) {
+                    if (line.startsWith("msg"))
+                        msg(line, context);
+                    else if (line.startsWith("setColor"))
+                        setColor(line, context);
+                    else
+                        source.sendFailure(Component.literal("Неизвестная команда на "+lineNumber+" строчке.").setStyle(Style.EMPTY.withColor(TextColor.parseColor("#d12a2a"))));
+                }
             }
             reader.close();
         } catch (IOException e) {

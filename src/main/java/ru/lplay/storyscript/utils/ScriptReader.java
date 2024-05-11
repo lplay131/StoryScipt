@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-import static net.minecraft.commands.arguments.EntityArgument.getPlayer;
 import static ru.lplay.storyscript.utils.errorMsg.errorScript;
 
 public class ScriptReader {
@@ -36,6 +35,8 @@ public class ScriptReader {
                         setColor(line);
                     else if (line.startsWith("run"))
                         runCmd(line, context);
+                    else if (line.startsWith("sleep"))
+                        sleepTime(line);
                     else if (line.startsWith("//")) {
                     } else {
                         errorScript("Неизвестная команда на " + lineNumber + " строчке.", context);
@@ -67,6 +68,15 @@ public class ScriptReader {
         String[] parts = command.split("\"");
         if (parts.length >= 2) {
             msgColor = parts[1];
+        }
+    }
+
+    private static void sleepTime(String command) {
+        try {
+            int seconds = Integer.parseInt(command.split(" ")[1]);
+            Thread.sleep(seconds * 1000L);
+        } catch (InterruptedException | NumberFormatException e) {
+            e.printStackTrace();
         }
     }
 

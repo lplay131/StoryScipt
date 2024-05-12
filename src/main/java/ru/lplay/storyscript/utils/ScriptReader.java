@@ -13,11 +13,12 @@ import net.minecraft.server.level.ServerPlayer;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-import static ru.lplay.storyscript.utils.errorMsg.errorScript;
+import static ru.lplay.storyscript.utils.ErrorMsg.errorScript;
 
 public class ScriptReader {
 
     private static String msgColor = "#ffffff";
+    public static Boolean KEY_NEXT_MESSAGE_PRESSED = true;
 
     public static void readScript(String filePath, CommandContext<CommandSourceStack> context) {
         msgColor = "#ffffff";
@@ -35,6 +36,8 @@ public class ScriptReader {
                         setColor(line);
                     else if (line.startsWith("run"))
                         runCmd(line, context);
+                    else if (line.startsWith("waitKey"))
+                        waitKey(context);
                     else if (line.startsWith("sleep"))
                         sleepTime(line);
                     else if (line.startsWith("//")) {
@@ -70,6 +73,18 @@ public class ScriptReader {
             msgColor = parts[1];
         }
     }
+
+    private static void waitKey(CommandContext<CommandSourceStack> context) {
+        while (!KEY_NEXT_MESSAGE_PRESSED) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        KEY_NEXT_MESSAGE_PRESSED = false;
+    }
+
 
     private static void sleepTime(String command) {
         try {

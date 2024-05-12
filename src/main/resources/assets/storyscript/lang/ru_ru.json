@@ -1,7 +1,6 @@
 {
   "key.category.storyscript.category": "StoryScript",
   "key.storyscript.next_message": "Следующее сообщение",
-  "message.error.errorscript": "Ошибка при выполнении скрипта: %s",
   "messages.unknown_command": "Неизвесная команда на %s строчке.",
   "message.error.file_not_found": "[StoryScript] Ошибка при выполнении скрипта: Файл %s не найден."
 }

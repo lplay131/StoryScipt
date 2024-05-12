@@ -1,7 +1,6 @@
 {
   "key.category.storyscript.category": "StoryScript",
   "key.storyscript.next_message": "Next message",
-  "message.error.errorscript": "Error when executing the script: ",
   "messages.unknown_command": "Unknown command on %s line.",
   "message.error.file_not_found": "[StoryScript] Error when executing the script: File %s is not found."
 }

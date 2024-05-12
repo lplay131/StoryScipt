@@ -59,12 +59,25 @@ public class ScriptReader {
 
     private static void msg(String command, CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        String[] parts = command.split("\"");
-        if (parts.length >= 3) {
-            String personage = parts[1];
-            String message = parts[2].substring(1).trim();
+        String personage = null;
+        String message = null;
+        if (command.contains("\"")) {
+            int firstQuote = command.indexOf("\"");
+            int secondQuote = command.indexOf("\"", firstQuote + 1);
+            if (firstQuote != -1 && secondQuote != -1) {
+                personage = command.substring(firstQuote + 1, secondQuote);
+                message = command.substring(secondQuote + 1).trim();
+            }
+        } else {
+            String[] parts = command.split(" ");
+            if (parts.length >= 3) {
+                personage = parts[1];
+                message = parts[2];
+            }
+        }
+
+        if (personage != null && message != null) {
             Style style = Style.EMPTY.withColor(TextColor.parseColor(msgColor));
-            //source.sendSystemMessage((Component.literal("[" + personage + "] ").setStyle(style)).append(Component.literal(message).setStyle(Style.EMPTY.withColor(TextColor.parseColor("#ffffff")))));
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 player.sendSystemMessage((Component.literal("[" + personage + "] ").setStyle(style)).append(Component.literal(message).setStyle(Style.EMPTY.withColor(TextColor.parseColor("#ffffff")))));
             }

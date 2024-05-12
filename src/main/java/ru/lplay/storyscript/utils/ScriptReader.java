@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-import static ru.lplay.storyscript.utils.ErrorMsg.errorScript;
 
 public class ScriptReader {
 
@@ -25,6 +24,7 @@ public class ScriptReader {
         CommandSourceStack source = context.getSource();
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8));
+            KEY_NEXT_MESSAGE_PRESSED = false;
             String line;
             int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
@@ -42,7 +42,10 @@ public class ScriptReader {
                         sleepTime(line);
                     else if (line.startsWith("//")) {
                     } else {
-                        errorScript("Неизвестная команда на " + lineNumber + " строчке.", context);
+                        MinecraftServer server = source.getServer();
+                        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                            player.sendSystemMessage((Component.translatable("messages.unknown_command", lineNumber).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
+                        }
                     }
 
                 }

@@ -6,7 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import ru.lplay.storyscript.utils.ErrorMsg;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.io.File;
 
@@ -23,17 +27,17 @@ public class CommandSS {
         CommandSourceStack source = context.getSource();
         String scriptPath = context.getArgument("script", String.class);
 
-        // Путь до скрипта
         String fullPath = "SScripts/" + scriptPath + ".sscript";
         File scriptFile = new File(source.getServer().getServerDirectory(), fullPath);
 
-        // Проверка существует ли скрипт
         if (!scriptFile.exists()) {
-            ErrorMsg.errorScript("Файл " + fullPath + " не найден!", context);
-            return 0; // Возвращаем 0, чтобы команда завершилась с ошибкой
+            MinecraftServer server = source.getServer();
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.sendSystemMessage((Component.translatable("message.error.file_not_found", fullPath).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
+            }
+            return 0;
         }
 
-        // Чтение скрипта
         readScript(scriptFile.getPath(), context);
 
         return 1;

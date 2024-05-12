@@ -13,47 +13,48 @@ import net.minecraft.server.level.ServerPlayer;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-
 public class ScriptReader {
 
     private static String msgColor = "#ffffff";
-    public static Boolean KEY_NEXT_MESSAGE_PRESSED = true;
+    public static volatile Boolean KEY_NEXT_MESSAGE_PRESSED = true;
 
     public static void readScript(String filePath, CommandContext<CommandSourceStack> context) {
         msgColor = "#ffffff";
         CommandSourceStack source = context.getSource();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8));
-            KEY_NEXT_MESSAGE_PRESSED = false;
-            String line;
-            int lineNumber = 0;
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                if (!line.trim().isEmpty()) {
-                    if (line.startsWith("msg"))
-                        msg(line, source);
-                    else if (line.startsWith("setColor"))
-                        setColor(line);
-                    else if (line.startsWith("run"))
-                        runCmd(line, context);
-                    else if (line.startsWith("waitKey"))
-                        waitKey(context);
-                    else if (line.startsWith("sleep"))
-                        sleepTime(line);
-                    else if (line.startsWith("//")) {
-                    } else {
-                        MinecraftServer server = source.getServer();
-                        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                            player.sendSystemMessage((Component.translatable("messages.unknown_command", lineNumber).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
+        new Thread(() -> {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8));
+                KEY_NEXT_MESSAGE_PRESSED = false;
+                String line;
+                int lineNumber = 0;
+                while ((line = reader.readLine()) != null) {
+                    lineNumber++;
+                    if (!line.trim().isEmpty()) {
+                        if (line.startsWith("msg"))
+                            msg(line, source);
+                        else if (line.startsWith("setColor"))
+                            setColor(line);
+                        else if (line.startsWith("run"))
+                            runCmd(line, context);
+                        else if (line.startsWith("waitKey"))
+                            waitKey(context);
+                        else if (line.startsWith("sleep"))
+                            sleepTime(line);
+                        else if (line.startsWith("//")) {
+                        } else {
+                            MinecraftServer server = source.getServer();
+                            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                                player.sendSystemMessage((Component.translatable("messages.unknown_command", lineNumber).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
+                            }
                         }
-                    }
 
+                    }
                 }
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     private static void msg(String command, CommandSourceStack source) {

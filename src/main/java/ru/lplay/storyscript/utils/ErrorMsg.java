@@ -8,7 +8,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-public class errorMsg {
+public class ErrorMsg {
     public static void errorScript(String error, CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         MinecraftServer server = source.getServer();

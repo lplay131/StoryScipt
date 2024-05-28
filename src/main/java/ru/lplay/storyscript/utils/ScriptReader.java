@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,10 +18,26 @@ public class ScriptReader {
 
     private static String msgColor = "#ffffff";
     public static volatile Boolean KEY_NEXT_MESSAGE_PRESSED = true;
+    private static WorldVariables worldVariables;
 
     public static void readScript(String filePath, CommandContext<CommandSourceStack> context) {
         msgColor = "#ffffff";
         CommandSourceStack source = context.getSource();
+        ServerPlayer player;
+        try {
+            player = source.getPlayerOrException();
+        } catch (CommandSyntaxException e) {
+            e.printStackTrace();
+            source.sendFailure(Component.literal("Failed to get player: " + e.getMessage()));
+            return;
+        }
+
+        if (worldVariables == null) {
+            // Инициализация переменных для текущего мира
+            File worldFolder = player.getLevel().getServer().getWorldPath(LevelResource.ROOT).toFile();
+            worldVariables = new WorldVariables(new File(worldFolder, "world_variables.properties"));
+        }
+
         new Thread(() -> {
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8));
@@ -31,9 +48,13 @@ public class ScriptReader {
                     lineNumber++;
                     if (!line.trim().isEmpty()) {
                         if (line.startsWith("msg"))
-                            msg(line, source);
+                            msg(line, source, player.getName().getString());
                         else if (line.startsWith("setColor"))
                             setColor(line);
+                        else if (line.startsWith("setVar"))
+                            setVariable(line);
+                        else if (line.startsWith("getVar"))
+                            getVariable(line, source);
                         else if (line.startsWith("run"))
                             runCmd(line, context);
                         else if (line.startsWith("waitKey"))
@@ -43,8 +64,8 @@ public class ScriptReader {
                         else if (line.startsWith("//")) {
                         } else {
                             MinecraftServer server = source.getServer();
-                            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                                player.sendSystemMessage((Component.translatable("messages.unknown_command", lineNumber).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
+                            for (ServerPlayer serverPlayer : server.getPlayerList().getPlayers()) {
+                                serverPlayer.sendSystemMessage((Component.translatable("messages.unknown_command", lineNumber).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
                             }
                         }
 
@@ -57,7 +78,7 @@ public class ScriptReader {
         }).start();
     }
 
-    private static void msg(String command, CommandSourceStack source) {
+    private static void msg(String command, CommandSourceStack source, String playerName) {
         MinecraftServer server = source.getServer();
         String personage = null;
         String message = null;
@@ -77,17 +98,53 @@ public class ScriptReader {
         }
 
         if (personage != null && message != null) {
+            message = message.replace("$playername", playerName);
+            message = replaceVariablesInMessage(message);
+
             Style style = Style.EMPTY.withColor(TextColor.parseColor(msgColor));
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                player.sendSystemMessage((Component.literal("[" + personage + "] ").setStyle(style)).append(Component.literal(message).setStyle(Style.EMPTY.withColor(TextColor.parseColor("#ffffff")))));
+            for (ServerPlayer serverPlayer : server.getPlayerList().getPlayers()) {
+                serverPlayer.sendSystemMessage((Component.literal("[" + personage + "] ").setStyle(style)).append(Component.literal(message).setStyle(Style.EMPTY.withColor(TextColor.parseColor("#ffffff")))));
             }
         }
+    }
+
+    private static String replaceVariablesInMessage(String message) {
+        int startIndex = 0;
+        while ((startIndex = message.indexOf("$$", startIndex)) != -1) {
+            int endIndex = startIndex + 2;
+            while (endIndex < message.length() && Character.isLetterOrDigit(message.charAt(endIndex))) {
+                endIndex++;
+            }
+            String variableName = message.substring(startIndex + 2, endIndex);
+            String variableValue = worldVariables.getVariable(variableName);
+            message = message.substring(0, startIndex) + variableValue + message.substring(endIndex);
+            startIndex += variableValue.length();
+        }
+        return message;
     }
 
     private static void setColor(String command) {
         String[] parts = command.split("\"");
         if (parts.length >= 2) {
             msgColor = parts[1];
+        }
+    }
+
+    private static void setVariable(String command) {
+        String[] parts = command.split(" ", 3);
+        if (parts.length >= 3) {
+            String key = parts[1];
+            String value = parts[2];
+            worldVariables.setVariable(key, value);
+        }
+    }
+
+    private static void getVariable(String command, CommandSourceStack source) {
+        String[] parts = command.split(" ", 2);
+        if (parts.length >= 2) {
+            String key = parts[1];
+            String value = worldVariables.getVariable(key);
+            source.sendSuccess(Component.literal("Variable " + key + " = " + value), false);
         }
     }
 
@@ -101,7 +158,6 @@ public class ScriptReader {
         }
         KEY_NEXT_MESSAGE_PRESSED = false;
     }
-
 
     private static void sleepTime(String command) {
         try {

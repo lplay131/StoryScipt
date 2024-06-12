@@ -1,5 +1,7 @@
 package ru.lasticks.storyscript.utils;
 
+import ru.lasticks.storyscript.StoryScript;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -14,12 +16,13 @@ public class ScriptFileReader {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (!line.trim().isEmpty()) {
-                    scripts.add(line.trim());
+                line = line.trim(); // Убираем начальные и конечные пробелы и символы перевода строки
+                if (!line.isEmpty() && !line.startsWith("//")) { // Проверяем, не пустая ли строка и не комментарий ли это
+                    scripts.add(line);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            StoryScript.LOGGER.error("The error with file reading: {0}", e);
         }
         return scripts;
     }

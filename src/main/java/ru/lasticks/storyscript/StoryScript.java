@@ -14,9 +14,10 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.lasticks.storyscript.commands.CommandSS;
-import ru.lasticks.storyscript.commands.scriptCommands.MessageCommand;
-import ru.lasticks.storyscript.commands.scriptCommands.RunCommand;
-import ru.lasticks.storyscript.commands.scriptCommands.SetColorCommand;
+import ru.lasticks.storyscript.commands.scriptCommands.Msg;
+import ru.lasticks.storyscript.commands.scriptCommands.Run;
+import ru.lasticks.storyscript.commands.scriptCommands.SetColor;
+import ru.lasticks.storyscript.commands.scriptCommands.SetVar;
 import ru.lasticks.storyscript.network.OpenGuiPacket;
 import ru.lasticks.storyscript.utils.ScriptManager;
 import ru.lasticks.storyscript.variables.VariableReplacer;
@@ -42,8 +43,9 @@ public class StoryScript {
                 PROTOCOL_VERSION::equals
         );
 
-        ScriptManager.registerCommand("run", new RunCommand());
-        ScriptManager.registerCommand("setColor", new SetColorCommand());
+        ScriptManager.registerCommand("run", new Run());
+        ScriptManager.registerCommand("setColor", new SetColor());
+        ScriptManager.registerCommand("setVar", new SetVar());
 
         CHANNEL.registerMessage(0, OpenGuiPacket.class, OpenGuiPacket::encode, OpenGuiPacket::decode, OpenGuiPacket::handle);
     }
@@ -74,9 +76,9 @@ public class StoryScript {
 
         WorldVariables worldVariables = new WorldVariables(varsFile);
         VariableReplacer variableReplacer = new VariableReplacer(worldVariables);
-        MessageCommand messageCommand = new MessageCommand(variableReplacer);
+        Msg msg = new Msg(variableReplacer);
 
-        ScriptManager.registerCommand("msg", messageCommand);
+        ScriptManager.registerCommand("msg", msg);
     }
 
     private static void createFolders() {

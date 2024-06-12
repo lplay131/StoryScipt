@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import ru.lasticks.storyscript.StoryScript;
 
-public class RunCommand implements StoryScript.ScriptCommand {
+public class Run implements StoryScript.ScriptCommand {
     @Override
     public void execute(MinecraftServer server, CommandContext<CommandSourceStack> context, String[] args) {
         if (args.length < 1) {

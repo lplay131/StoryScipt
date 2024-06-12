@@ -1,4 +1,4 @@
-package ru.lplay.storyscript.utils;
+package ru.lasticks.storyscript.utils;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,15 +10,16 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
+import ru.lasticks.storyscript.variables.WorldVariables;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 public class ScriptReader {
 
-    private static String msgColor = "#ffffff";
+    public static String msgColor = "#ffffff";
     public static volatile Boolean KEY_NEXT_MESSAGE_PRESSED = true;
-    private static WorldVariables worldVariables;
+    public static WorldVariables worldVariables;
 
     public static void readScript(String filePath, CommandContext<CommandSourceStack> context) {
         msgColor = "#ffffff";
@@ -32,11 +33,7 @@ public class ScriptReader {
             return;
         }
 
-        if (worldVariables == null) {
-            // Инициализация переменных для текущего мира
-            File worldFolder = player.getLevel().getServer().getWorldPath(LevelResource.ROOT).toFile();
-            worldVariables = new WorldVariables(new File(worldFolder, "world_variables.properties"));
-        }
+        initializeWorldVariables(player);
 
         new Thread(() -> {
             try {
@@ -62,13 +59,13 @@ public class ScriptReader {
                         else if (line.startsWith("sleep"))
                             sleepTime(line);
                         else if (line.startsWith("//")) {
+                            // Comment line, do nothing
                         } else {
                             MinecraftServer server = source.getServer();
                             for (ServerPlayer serverPlayer : server.getPlayerList().getPlayers()) {
                                 serverPlayer.sendSystemMessage((Component.translatable("messages.unknown_command", lineNumber).setStyle(Style.EMPTY.withColor(TextColor.parseColor("red")))));
                             }
                         }
-
                     }
                 }
                 reader.close();
@@ -76,6 +73,14 @@ public class ScriptReader {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    public static void initializeWorldVariables(ServerPlayer player) {
+        if (worldVariables == null) {
+            // Инициализация переменных для текущего мира
+            File worldFolder = player.getLevel().getServer().getWorldPath(LevelResource.ROOT).toFile();
+            worldVariables = new WorldVariables(new File(worldFolder, "world_variables.properties"));
+        }
     }
 
     private static void msg(String command, CommandSourceStack source, String playerName) {
@@ -124,7 +129,7 @@ public class ScriptReader {
     }
 
     private static void setColor(String command) {
-        String[] parts = command.split("\"");
+        String[] parts = command.split(" ");
         if (parts.length >= 2) {
             msgColor = parts[1];
         }
@@ -140,7 +145,7 @@ public class ScriptReader {
     }
 
     private static void getVariable(String command, CommandSourceStack source) {
-        String[] parts = command.split(" ", 2);
+        String[] parts = command.split(" ");
         if (parts.length >= 2) {
             String key = parts[1];
             String value = worldVariables.getVariable(key);

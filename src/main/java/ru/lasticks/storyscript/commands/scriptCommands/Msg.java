@@ -13,12 +13,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.lasticks.storyscript.variables.VariableReplacer;
 
-public class MessageCommand implements StoryScript.ScriptCommand {
+public class Msg implements StoryScript.ScriptCommand {
     public static String msgColor = "#ffffff";
     private static final Logger LOGGER = LogManager.getLogger();
     private final VariableReplacer variableReplacer;
 
-    public MessageCommand(VariableReplacer variableReplacer) {
+    public Msg(VariableReplacer variableReplacer) {
         this.variableReplacer = variableReplacer;
     }
 

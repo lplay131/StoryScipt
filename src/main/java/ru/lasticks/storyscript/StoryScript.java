@@ -14,10 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.lasticks.storyscript.commands.CommandSS;
-import ru.lasticks.storyscript.commands.scriptCommands.Msg;
-import ru.lasticks.storyscript.commands.scriptCommands.Run;
-import ru.lasticks.storyscript.commands.scriptCommands.SetColor;
-import ru.lasticks.storyscript.commands.scriptCommands.SetVar;
+import ru.lasticks.storyscript.commands.scriptCommands.*;
 import ru.lasticks.storyscript.network.OpenGuiPacket;
 import ru.lasticks.storyscript.utils.ScriptManager;
 import ru.lasticks.storyscript.variables.VariableReplacer;
@@ -46,6 +43,7 @@ public class StoryScript {
         ScriptManager.registerCommand("run", new Run());
         ScriptManager.registerCommand("setColor", new SetColor());
         ScriptManager.registerCommand("setVar", new SetVar());
+        ScriptManager.registerCommand("sleep", new Sleep());
 
         CHANNEL.registerMessage(0, OpenGuiPacket.class, OpenGuiPacket::encode, OpenGuiPacket::decode, OpenGuiPacket::handle);
     }

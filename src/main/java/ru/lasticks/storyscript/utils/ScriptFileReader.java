@@ -22,7 +22,7 @@ public class ScriptFileReader {
                 }
             }
         } catch (IOException e) {
-            StoryScript.LOGGER.error("The error with file reading: {0}", e);
+            StoryScript.LOGGER.error("The error with file reading: ", e);
         }
         return scripts;
     }
